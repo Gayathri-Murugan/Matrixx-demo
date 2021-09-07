@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:mule-matrixx-connector="http://www.mulesoft.org/schema/mule/mule-matrixx-connector"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/mule-matrixx-connector http://www.mulesoft.org/schema/mule/mule-matrixx-connector/current/mule-mule-matrixx-connector.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="2bef0a88-4cbe-434a-a498-deecece4fe70" >
+		<http:listener-connection host="0.0.0.0" port="8082" />
+	</http:listener-config>
+	<mule-matrixx-connector:config name="Matrixx_Connector___Mule_4_Config" doc:name="Matrixx Connector - Mule 4 Config" doc:id="579bbf77-c6fa-4f8c-a3dc-dca11ab9b82b" >
+		<mule-matrixx-connector:connection baseURL="http://k8s-matrixx-proxying-467f9bd6d1-1016696645.us-east-1.elb.amazonaws.com/rsgateway" />
+	</mule-matrixx-connector:config>
+	<flow name="create_subscription" doc:id="851b23af-ef3e-4064-8046-2911a063ca00" >
+		<http:listener doc:name="Listener" doc:id="06c032ad-78a7-46fd-b8d6-f9d71ee9683d" config-ref="HTTP_Listener_config" path="/subscription"/>
+		<mule-matrixx-connector:create-subscription doc:name="Create Subscription" doc:id="46383c07-7762-4314-a810-63245f90f232" config-ref="Matrixx_Connector___Mule_4_Config"/>
+		<ee:transform doc:name="Transform Message" doc:id="7c41b25f-ac4b-4e1f-91d6-9ed81a1160a1">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="create_user" doc:id="f924723b-76e9-4527-a3c5-31736b86e525">
+		<http:listener doc:name="Listener" doc:id="be879d0b-cc54-423c-9550-4768afe55a46" config-ref="HTTP_Listener_config" path="/user" />
+		<mule-matrixx-connector:create-billing-account doc:name=" Create User" doc:id="09309746-8664-44a3-a38c-76a8d79d8079" config-ref="Matrixx_Connector___Mule_4_Config" />
+		<ee:transform doc:name="Transform Message" doc:id="8532162a-e55d-4e79-a920-3c965806c772">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="add_user_to_subscription" doc:id="2b70d841-c37b-4cd6-9559-7ff1d37949ba" >
+		<http:listener doc:name="Listener" doc:id="9117b4ba-5066-46b4-b5c7-e027e69fe876" config-ref="HTTP_Listener_config" path="/adduser"/>
+		<mule-matrixx-connector:addusertosubscription doc:name=" Add User To Subscription" doc:id="b4eb4a89-0c59-4461-8cc5-6b1f99d7f540" config-ref="Matrixx_Connector___Mule_4_Config"/>
+		<ee:transform doc:name="Transform Message" doc:id="d2cebe3c-ff7f-471a-b8cf-53686ff5c05b" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="create_device" doc:id="e4954861-775b-4e9f-9bb7-2abad9ad5806" >
+		<http:listener doc:name="Listener" doc:id="e16df1ed-2b74-4b3f-811f-8364d6037e38" config-ref="HTTP_Listener_config" path="/device"/>
+		<mule-matrixx-connector:create-device doc:name="Create Device" doc:id="e401385c-82fa-4aa7-8d4f-e7bb9a1b3c6f" config-ref="Matrixx_Connector___Mule_4_Config"/>
+		<ee:transform doc:name="Transform Message" doc:id="de73f4ab-7f38-428a-a38c-70646294c587" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="delete_user" doc:id="6be68487-56a2-431e-b3da-a87c2fe3fa28" >
+		<http:listener doc:name="Listener" doc:id="a663dd27-55fa-41b5-b503-8851044ec7a8" config-ref="HTTP_Listener_config" path="/deluser/{ObjectID}"/>
+		<mule-matrixx-connector:delete-user doc:name=" Delete User" doc:id="d565ee9a-1b28-40dd-a7b6-81e28eab9b37" config-ref="Matrixx_Connector___Mule_4_Config"  ObjectID="#[attributes.uriParams.ObjectID]"/>
+		<ee:transform doc:name="Transform Message" doc:id="b0ceabad-d11a-451a-91e6-52bf73274f40" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="delete_device" doc:id="09cfe061-c545-45f0-b33a-5be0d606d705" >
+		<http:listener doc:name="Listener" doc:id="3a89696a-4c26-4166-86ff-4313c5029c10" config-ref="HTTP_Listener_config" path="/deldevice/{ObjectID}"/>
+		<mule-matrixx-connector:delete-device doc:name=" Delete Device" doc:id="707808d4-eaed-4aa4-8bd5-e67d1864c565" config-ref="Matrixx_Connector___Mule_4_Config"  ObjectID="#[attributes.uriParams.ObjectID]"/>
+		<ee:transform doc:name="Transform Message" doc:id="041b2c0e-3ffc-4d26-aaba-63fea7cb1746" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="CustomerAccountGroup" doc:id="26e1ff68-761e-42cc-9ad0-7f022ccbce7b" >
+		<http:listener doc:name="Listener" doc:id="49e09446-6d3c-49c6-83fe-e61be49b1a3a" config-ref="HTTP_Listener_config" path="/customeraccount"/>
+		<mule-matrixx-connector:createcustomeraccount-group doc:name="Create Customer Account Group" doc:id="db210c93-70f7-4fd5-b18b-055d70801a36" config-ref="Matrixx_Connector___Mule_4_Config"/>
+		<ee:transform doc:name="Transform Message" doc:id="88a5f4a8-25b3-4035-b6c2-5426bd88555c" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="demo_matrixxFlow1" doc:id="1c9e8d7f-90e4-40f1-814c-b746262b90ed" >
+		<http:listener doc:name="Listener" doc:id="311a7fab-5554-47f4-9c16-bf504a1e36a1" config-ref="HTTP_Listener_config" path="/purchase"/>
+		<mule-matrixx-connector:purchase-offer doc:name="Purchase Offer" doc:id="9e1f9932-3cb9-4a7d-8cf8-9eca10607222" config-ref="Matrixx_Connector___Mule_4_Config"/>
+		<ee:transform doc:name="Transform Message" doc:id="7b13dff9-012c-4ddf-9e17-f97b30b8584e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="demo_matrixxFlow" doc:id="bda3eb25-f395-4e61-9875-3534b9fb9421" >
+		<http:listener doc:name="Listener" doc:id="a011bfc1-5c06-433c-8391-9b27166dc072" config-ref="HTTP_Listener_config" path="/billingaccount"/>
+		<mule-matrixx-connector:billingaccountgroup doc:name="Create Billing Account Group" doc:id="49a66bb2-54bb-4c55-a49a-3d702ac0dc66" config-ref="Matrixx_Connector___Mule_4_Config"/>
+		<ee:transform doc:name="Transform Message" doc:id="d26890b4-74ab-4f76-ac76-42b5083a1897" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
